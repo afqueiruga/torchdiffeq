@@ -26,7 +26,7 @@ class Midpoint(FixedGridODESolver):
 class RK4(FixedGridODESolver):
 
     def step_func(self, func, t, dt, y):
-        return rk_common.rk4_alt_step_func(func, t, dt, y)
+        return rk_common.rk4_alt_step_func(func, t, dt, y, enforce_openset=self.enforce_openset)
 
     @property
     def order(self):

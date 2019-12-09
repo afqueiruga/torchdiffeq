@@ -1,6 +1,6 @@
 # Based on https://github.com/tensorflow/tensorflow/tree/master/tensorflow/contrib/integrate
 import collections
-from .misc import _scaled_dot_product, _convert_to_tensor
+from .misc import _scaled_dot_product, _convert_to_tensor, _enforce_timestep_open_set
 
 _ButcherTableau = collections.namedtuple('_ButcherTableau', 'alpha beta c_sol c_error')
 
@@ -61,18 +61,22 @@ def _runge_kutta_step(func, y0, f0, t0, dt, tableau):
     return (y1, f1, y1_error, k)
 
 
-def rk4_step_func(func, t, dt, y, k1=None):
+def rk4_step_func(func, t, dt, y, k1=None, enforce_openset=False):
     if k1 is None: k1 = func(t, y)
     k2 = func(t + dt / 2, tuple(y_ + dt * k1_ / 2 for y_, k1_ in zip(y, k1)))
     k3 = func(t + dt / 2, tuple(y_ + dt * k2_ / 2 for y_, k2_ in zip(y, k2)))
-    k4 = func(t + dt, tuple(y_ + dt * k3_ for y_, k3_ in zip(y, k3)))
+    # func may have a discontinuity at t+dt
+    t4 = _enforce_timestep_open_set(t + dt,t+dt, enforce=enforce_openset)
+    k4 = func(t4, tuple(y_ + dt * k3_ for y_, k3_ in zip(y, k3)))
     return tuple((k1_ + 2 * k2_ + 2 * k3_ + k4_) * (dt / 6) for k1_, k2_, k3_, k4_ in zip(k1, k2, k3, k4))
 
 
-def rk4_alt_step_func(func, t, dt, y, k1=None):
+def rk4_alt_step_func(func, t, dt, y, k1=None, enforce_openset=False):
     """Smaller error with slightly more compute."""
     if k1 is None: k1 = func(t, y)
     k2 = func(t + dt / 3, tuple(y_ + dt * k1_ / 3 for y_, k1_ in zip(y, k1)))
     k3 = func(t + dt * 2 / 3, tuple(y_ + dt * (k1_ / -3 + k2_) for y_, k1_, k2_ in zip(y, k1, k2)))
-    k4 = func(t + dt, tuple(y_ + dt * (k1_ - k2_ + k3_) for y_, k1_, k2_, k3_ in zip(y, k1, k2, k3)))
+    # func may have a discontinuity at t+dt
+    t4 = _enforce_timestep_open_set(t + dt,t+dt, enforce=enforce_openset)
+    k4 = func(t4, tuple(y_ + dt * (k1_ - k2_ + k3_) for y_, k1_, k2_, k3_ in zip(y, k1, k2, k3)))
     return tuple((k1_ + 3 * k2_ + 3 * k3_ + k4_) * (dt / 8) for k1_, k2_, k3_, k4_ in zip(k1, k2, k3, k4))

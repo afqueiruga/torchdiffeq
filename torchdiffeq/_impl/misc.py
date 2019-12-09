@@ -193,3 +193,23 @@ def _check_inputs(func, y0, t):
         raise TypeError('`t` must be a floating point Tensor but is a {}'.format(t.type()))
 
     return tensor_input, func, y0, t
+
+
+def _enforce_timestep_open_set(t_star, t_max, enforce=False):
+    """Enforces that the integrator operates on [t, t+Dt) by nudging down the 
+    t* that is passed into the rate function.
+
+    Functions may have discontinuities at the prescribed timesteps. This is especially true with
+    one-to-one correspondences along the depth of a neural network, e.g. ResNets, where the weight
+    coefficients change at exactly the time-step.
+
+    Args:
+        t_star: The time that the tableau wants to pass to f
+        t_max: the end of the timestep; i.e. upper bound on the domain.
+        enforce: optional, whether or not to enable this nudge. Defaults to False.
+    """
+    epsilon = 1.0e-15
+    if enforce and t_star >= t_max:
+        return t_star - epsilon
+    else:
+        return t_star

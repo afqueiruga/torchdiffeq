@@ -6,7 +6,7 @@ from .misc import _assert_increasing, _handle_unused_kwargs
 class AdaptiveStepsizeODESolver(object):
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, func, y0, atol, rtol, **unused_kwargs):
+    def __init__(self, func, y0, atol, rtol, enforce_openset=False, **unused_kwargs):
         _handle_unused_kwargs(self, unused_kwargs)
         del unused_kwargs
 
@@ -14,6 +14,8 @@ class AdaptiveStepsizeODESolver(object):
         self.y0 = y0
         self.atol = atol
         self.rtol = rtol
+
+        self.enforce_openset=enforce_openset
 
     def before_integrate(self, t):
         pass
@@ -36,7 +38,7 @@ class AdaptiveStepsizeODESolver(object):
 class FixedGridODESolver(object):
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, func, y0, step_size=None, grid_constructor=None, **unused_kwargs):
+    def __init__(self, func, y0, step_size=None, grid_constructor=None, enforce_openset=False, **unused_kwargs):
         unused_kwargs.pop('rtol', None)
         unused_kwargs.pop('atol', None)
         _handle_unused_kwargs(self, unused_kwargs)
@@ -51,6 +53,8 @@ class FixedGridODESolver(object):
             self.grid_constructor = lambda f, y0, t: t
         else:
             raise ValueError("step_size and grid_constructor are exclusive arguments.")
+
+        self.enforce_openset=enforce_openset
 
     def _grid_constructor_from_step_size(self, step_size):
 

@@ -80,5 +80,32 @@ class TestCollectionState(unittest.TestCase):
             self.assertTrue(torch.autograd.gradcheck(func, (y0, t_points)))
 
 
+class TestOpenSet(unittest.TestCase):
+
+    def test(self):
+        def f(t,x):
+            if t<1.0:
+                return 0.0
+            else:
+                return 1.0
+        t_points = torch.Tensor([0.0,1.0])
+        y0 = torch.Tensor([0.0])
+        # This should pick up a bad 1.0 with the default
+        ys = torchdiffeq.odeint(f, y0, t_points, method='rk4')
+        self.assertNotEqual(ys[1].cpu().item(), 0.0)
+        # This should be the same answer
+        ys = torchdiffeq.odeint(f, y0, t_points, method='rk4',
+                                    options=dict(enforce_openset=False))
+        self.assertNotEqual(ys[1].cpu().item(),  0.0)
+        # This should be right
+        ys = torchdiffeq.odeint(f, y0, t_points, method='rk4',
+                                    options=dict(enforce_openset=True))
+        self.assertEqual(ys[1].cpu().item(),  0.0)
+
+        # It doesn't matter with Euler
+        ys = torchdiffeq.odeint(f, y0, t_points, method='euler',
+                                    options=dict(enforce_openset=False))
+        self.assertEqual(ys[1].cpu().item(),  0.0)
+
 if __name__ == '__main__':
     unittest.main()
