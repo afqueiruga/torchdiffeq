@@ -38,6 +38,12 @@ class TestSolverError(unittest.TestCase):
         y = torchdiffeq.odeint(f, y0, t_points, method='rk4')
         self.assertLess(rel_error(sol, y), error_tol)
 
+    def test_rk4_classic(self):
+        f, y0, t_points, sol = problems.construct_problem(TEST_DEVICE)
+
+        y = torchdiffeq.odeint(f, y0, t_points, method='rk4_classic')
+        self.assertLess(rel_error(sol, y), error_tol)
+
     def test_explicit_adams(self):
         f, y0, t_points, sol = problems.construct_problem(TEST_DEVICE)
 

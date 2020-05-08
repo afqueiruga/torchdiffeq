@@ -2,7 +2,7 @@ from .tsit5 import Tsit5Solver
 from .dopri5 import Dopri5Solver
 from .bosh3 import Bosh3Solver
 from .adaptive_heun import AdaptiveHeunSolver
-from .fixed_grid import Euler, Midpoint, RK4
+from .fixed_grid import Euler, Midpoint, RK4, RK4Alt, RK4Classic
 from .fixed_adams import AdamsBashforth, AdamsBashforthMoulton
 from .adams import VariableCoefficientAdamsBashforth
 from .misc import _check_inputs
@@ -16,7 +16,9 @@ SOLVERS = {
     'bosh3': Bosh3Solver,
     'euler': Euler,
     'midpoint': Midpoint,
-    'rk4': RK4,
+    'rk4': RK4Alt,
+    'rk4_alt': RK4Alt,
+    'rk4_classic': RK4Classic,
     'adaptive_heun': AdaptiveHeunSolver,
 }
 
